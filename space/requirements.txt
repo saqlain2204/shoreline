@@ -1,0 +1,7 @@
+torch
+transformers
+peft
+pillow
+numpy
+gradio
+git+https://github.com/saqlain2204/shoreline.git

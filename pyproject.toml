@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shoreline"
+version = "0.1.0"
+description = "An open land-and-water environment for reinforcement learning"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "pillow>=10",
+]
+
+[project.optional-dependencies]
+openenv = [
+    "openenv>=0.2.2",
+    "fastapi>=0.116",
+    "uvicorn>=0.24",
+]
+train = [
+    "torch>=2.1",
+    "transformers>=4.44",
+    "peft>=0.12",
+    "accelerate>=0.33",
+    "huggingface_hub>=0.24",
+]
+dev = [
+    "pytest>=8",
+]
+
+[project.scripts]
+shoreline-demo = "shoreline.demo:main"
+shoreline-plot = "shoreline.plot:main"
+shoreline-mask = "shoreline.build_mask:main"
+
+[tool.setuptools.packages.find]
+include = ["shoreline*"]
+
+[tool.setuptools.package-data]
+shoreline = ["data/*.npz", "data/*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
