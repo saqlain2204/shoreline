@@ -166,6 +166,78 @@
     .fact strong.swap { animation: enter 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
     .miss { color: var(--miss); }
     .note { min-height: 1.4em; margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+    .episode {
+      margin-top: 28px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+    .episode h2 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+    }
+    .episode .caption { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+    .episode-body { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: center; }
+    .board-wrap { position: relative; width: 220px; height: 168px; }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(6, 1fr);
+      gap: 3px;
+      width: 100%;
+      height: 100%;
+    }
+    .cell { border-radius: 3px; background: #0c2438; }
+    .cell.land { background: #c4b48c; }
+    .cell.pay { box-shadow: inset 0 0 0 1px #fff; }
+    .agent {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      margin: -4.5px 0 0 -4.5px;
+      border-radius: 50%;
+      background: #fff;
+      pointer-events: none;
+      transition: left 0.5s cubic-bezier(0.16, 1, 0.3, 1), top 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .survey {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0c2438;
+      color: #d4d4d4;
+      font-family: "Geist Mono", ui-monospace, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .survey.show { opacity: 1; }
+    .survey b { color: #fff; font-weight: 500; }
+    .trace { min-height: 148px; }
+    .trace ol {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-family: "Geist Mono", ui-monospace, monospace;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .trace li { color: var(--faint); }
+    .trace li.on { color: var(--ink); animation: enter 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+    .trace li.hit { color: #fff; }
+    .phases { display: flex; gap: 8px; align-items: center; margin-top: 14px; color: var(--faint); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .phases span { padding: 4px 8px; border: 1px solid transparent; border-radius: 999px; transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease; }
+    .phases span.on { color: var(--ink); border-color: var(--line-strong); background: rgba(255, 255, 255, 0.04); }
+    .phases i { font-style: normal; color: var(--faint); }
     article { max-width: 680px; margin-top: 72px; }
     article h2 {
       margin: 0 0 16px;
@@ -224,7 +296,8 @@
     footer a { margin-right: 16px; }
     @media (max-width: 800px) {
       h1 { font-size: 32px; }
-      .stage, .facts, .stats { grid-template-columns: 1fr; }
+      .stage, .facts, .stats, .episode-body { grid-template-columns: 1fr; }
+      .board-wrap { width: 100%; max-width: 280px; }
       #tile { width: 100%; height: auto; aspect-ratio: 1; }
       header {
         height: auto;
@@ -285,6 +358,28 @@
           <div class="fact"><span>Score</span><strong id="score">—</strong></div>
         </div>
         <p class="note" id="note">Drawing the atlas…</p>
+      </div>
+    </section>
+
+    <section class="episode" aria-label="A looping episode">
+      <h2>An episode, playing on its own</h2>
+      <p class="caption">Reset, then an action, then a reward. Coast walks to the shore. Survey answers the cell. The loop is what the OpenEnv server steps through.</p>
+      <div class="episode-body">
+        <div class="board-wrap">
+          <div class="board" id="board"></div>
+          <span class="agent" id="agent" hidden></span>
+          <div class="survey" id="survey"></div>
+        </div>
+        <div class="trace">
+          <ol id="trace"></ol>
+          <div class="phases">
+            <span data-phase="obs">Observation</span>
+            <i>→</i>
+            <span data-phase="act">Action</span>
+            <i>→</i>
+            <span data-phase="rew">Reward</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -504,6 +599,60 @@ Reply with one word: land or water.</pre>
     }).catch(() => {
       document.getElementById("note").textContent = "The atlas file did not load.";
     });
+
+    const board = document.getElementById("board");
+    const agent = document.getElementById("agent");
+    const survey = document.getElementById("survey");
+    const trace = document.getElementById("trace");
+    const phaseNodes = document.querySelectorAll(".phases span");
+    for (let row = 0; row < 6; row++) {
+      for (let col = 0; col < 8; col++) {
+        const cell = document.createElement("div");
+        cell.className = "cell" + (row < 5 ? " land" : "");
+        board.appendChild(cell);
+      }
+    }
+    const beats = [
+      { phase: "obs", line: "reset()          coast", row: 1, col: 3 },
+      { phase: "act", line: "step(south)", row: 2, col: 3 },
+      { phase: "rew", line: "reward           0", row: 2, col: 3 },
+      { phase: "act", line: "step(south)", row: 3, col: 3 },
+      { phase: "rew", line: "reward           0", row: 3, col: 3 },
+      { phase: "act", line: "step(here)", row: 4, col: 3 },
+      { phase: "rew", line: "reward           1", row: 4, col: 3, hit: true },
+      { phase: "obs", line: "reset()          survey", survey: "Land or Water?\n48.86, 2.35" },
+      { phase: "act", line: "step(land)", survey: "Land or Water?\n48.86, 2.35\n<b>land</b>" },
+      { phase: "rew", line: "reward           1", survey: "Land or Water?\n48.86, 2.35\n<b>land</b>", hit: true },
+    ];
+    let beat = 0;
+    let timer = 0;
+
+    function showBeat(index) {
+      const step = beats[index];
+      agent.hidden = Boolean(step.survey);
+      survey.classList.toggle("show", Boolean(step.survey));
+      if (step.survey) survey.innerHTML = step.survey.replaceAll("\n", "<br>");
+      if (!step.survey) {
+        agent.style.left = ((step.col + 0.5) / 8) * 100 + "%";
+        agent.style.top = ((step.row + 0.5) / 6) * 100 + "%";
+      }
+      for (const cell of board.children) cell.classList.remove("pay");
+      if (step.hit && !step.survey) board.children[step.row * 8 + step.col].classList.add("pay");
+      for (const node of phaseNodes) node.classList.toggle("on", node.dataset.phase === step.phase);
+      const item = document.createElement("li");
+      item.textContent = step.line;
+      item.className = "on" + (step.hit ? " hit" : "");
+      trace.appendChild(item);
+      while (trace.children.length > 4) trace.removeChild(trace.firstChild);
+    }
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    showBeat(reduce ? 6 : 0);
+    if (!reduce) timer = window.setInterval(() => {
+      beat = (beat + 1) % beats.length;
+      if (beat === 0) trace.replaceChildren();
+      showBeat(beat);
+    }, 900);
   </script>
 </body>
 </html>
