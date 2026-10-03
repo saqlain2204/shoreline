@@ -88,7 +88,7 @@ python -m shoreline.grpo --task locate --steps 20
 
 `python -m shoreline.sft` fits a LoRA so the reply is the word the atlas would mark correct. On a T4, 400 steps of eight places each produced the adapter published with this project. On 200 fresh balanced places it scored 75.5 percent (61 percent of land, 92 percent of water). Before training, the same prompt scored 47 percent and almost never said land. On 200 places drawn uniformly, the trained adapter scored 81.5 percent.
 
-The write-up is [docs/blog.md](docs/blog.md). The live demo is the [Shoreline space](https://huggingface.co/spaces/vanishingradient/shoreline). The weights are [vanishingradient/shoreline-land-water](https://huggingface.co/vanishingradient/shoreline-land-water).
+The live demo and the write-up are on the [Shoreline space](https://huggingface.co/spaces/vanishingradient/shoreline). The weights are [vanishingradient/shoreline-land-water](https://huggingface.co/vanishingradient/shoreline-land-water).
 
 ## OpenEnv server
 
