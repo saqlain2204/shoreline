@@ -5,6 +5,7 @@ from __future__ import annotations
 import tempfile
 
 import gradio as gr
+import spaces
 import torch
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -32,16 +33,20 @@ model.eval()
 sim = ShoreSim()
 
 
+@spaces.GPU(duration=60)
 def reply(prompt: str) -> str:
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
     text = tokenizer.apply_chat_template(
         [{"role": "user", "content": prompt}],
         tokenize=False,
         add_generation_prompt=True,
     )
     encoded = tokenizer(text, return_tensors="pt")
+    encoded = {key: value.to(device) for key, value in encoded.items()}
     with torch.no_grad():
         generated = model.generate(**encoded, max_new_tokens=6, do_sample=False)
-    new_tokens = generated[0, encoded["input_ids"].shape[1] :]
+    new_tokens = generated[0, encoded["input_ids"].shape[1] :].detach().cpu()
     return tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
 
