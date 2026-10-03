@@ -6,294 +6,262 @@
   <title>Shoreline</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,640&family=Outfit:wght@360;500;640&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #071018;
-      --ink: #f3ecdf;
-      --muted: #93a0ad;
-      --line: rgba(232, 214, 176, 0.16);
-      --card: rgba(10, 18, 28, 0.78);
-      --accent: #8fd0c6;
-      --gold: #e4b15a;
-      --coral: #e08a78;
-      --water: #12324c;
+      --bg: #000;
+      --panel: #0a0a0a;
+      --ink: #ededed;
+      --muted: #a1a1a1;
+      --faint: #737373;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.14);
+      --miss: #f87171;
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      color: var(--ink);
       background: var(--bg);
-      font: 17px/1.55 Outfit, "Segoe UI", sans-serif;
+      color: var(--ink);
+      font-family: Geist, Inter, ui-sans-serif, system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      letter-spacing: -0.011em;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: -25%;
-      z-index: -2;
-      background:
-        radial-gradient(ellipse at 18% 0%, rgba(28, 92, 122, 0.55), transparent 46%),
-        radial-gradient(ellipse at 90% 80%, rgba(228, 177, 90, 0.14), transparent 42%),
-        radial-gradient(ellipse at 50% 40%, rgba(143, 208, 198, 0.08), transparent 50%);
-      animation: drift 22s ease-in-out infinite alternate;
-    }
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background-image: linear-gradient(rgba(243, 236, 223, 0.035) 1px, transparent 1px);
-      background-size: 100% 4px;
-      mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);
-      opacity: 0.35;
-    }
-    @keyframes drift {
-      from { transform: translate3d(-2%, -1%, 0) scale(1); }
-      to { transform: translate3d(3%, 2%, 0) scale(1.08); }
-    }
-    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
-    main { max-width: 1040px; margin: 0 auto; padding: 28px 20px 72px; }
-    .top {
+    a { color: inherit; text-decoration: none; }
+    a:hover { color: #fff; }
+    main { max-width: 960px; margin: 0 auto; padding: 0 24px 96px; }
+    header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 28px;
-      animation: rise 0.7s ease both;
+      justify-content: space-between;
+      height: 64px;
+      border-bottom: 1px solid var(--line);
+      margin: 0 -24px 40px;
+      padding: 0 24px;
     }
-    .mark {
-      font-family: Fraunces, Georgia, serif;
-      font-size: 1.05rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-    .nav { display: flex; gap: 16px; font-size: 0.92rem; }
+    .brand { font-weight: 600; letter-spacing: -0.03em; }
+    nav { display: flex; gap: 20px; color: var(--muted); font-size: 14px; }
+    nav a { transition: color 0.15s ease; }
     h1 {
-      margin: 0 0 10px;
-      font-family: Fraunces, Georgia, serif;
-      font-weight: 520;
-      font-size: clamp(2.6rem, 6vw, 4.6rem);
-      line-height: 0.95;
-      letter-spacing: -0.035em;
-      animation: rise 0.8s ease 0.05s both;
+      margin: 0 0 12px;
+      font-size: 40px;
+      font-weight: 600;
+      letter-spacing: -0.045em;
+      line-height: 1.1;
     }
     .lead {
       max-width: 62ch;
-      margin: 0 0 18px;
+      margin: 0 0 28px;
       color: var(--muted);
-      animation: rise 0.8s ease 0.12s both;
+      font-size: 16px;
+      line-height: 1.6;
     }
-    .wave {
-      width: min(280px, 70%);
-      height: 28px;
-      margin: 0 0 26px;
-      overflow: visible;
-      animation: rise 0.8s ease 0.18s both;
+    .enter { animation: enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .d1 { animation-delay: 0.04s; }
+    .d2 { animation-delay: 0.08s; }
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
     }
-    .wave path {
-      fill: none;
-      stroke: var(--accent);
-      stroke-width: 1.6;
-      stroke-linecap: round;
-      stroke-dasharray: 8 10;
-      animation: flow 8s linear infinite;
-    }
-    @keyframes flow { to { stroke-dashoffset: -180; } }
     .stage {
       display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 22px;
-      padding: 18px;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      padding: 16px;
       border: 1px solid var(--line);
-      border-radius: 22px;
-      background: var(--card);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
-      animation: rise 0.9s ease 0.22s both;
+      border-radius: 12px;
+      background: var(--panel);
     }
-    .tile-frame, .map-frame { position: relative; }
+    .frame { position: relative; }
     canvas {
       display: block;
       width: 100%;
-      background: var(--water);
-      border-radius: 16px;
+      background: #0c2438;
+      border: 1px solid var(--line);
+      border-radius: 8px;
       image-rendering: pixelated;
+      transition: opacity 0.18s ease;
     }
-    #tile { width: 300px; height: 300px; }
-    .tile-frame::after, .map-frame::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 16px;
-      pointer-events: none;
-      background: linear-gradient(115deg, transparent 35%, rgba(243, 236, 223, 0.16), transparent 65%);
-      transform: translateX(-120%);
-      animation: sheen 7s ease-in-out infinite;
-    }
-    .tile-frame.pulse { animation: pop 0.55s ease; }
-    @keyframes pop {
-      0% { transform: scale(0.985); filter: brightness(1.45); }
-      100% { transform: none; filter: none; }
-    }
-    @keyframes sheen { 0%, 62% { transform: translateX(-120%); } 82%, 100% { transform: translateX(120%); } }
+    #tile { width: 280px; height: 280px; }
+    canvas.dim { opacity: 0.45; }
     .pin {
       position: absolute;
-      width: 12px;
-      height: 12px;
-      margin: -6px 0 0 -6px;
-      border: 2px solid #f4fffC;
+      width: 8px;
+      height: 8px;
+      margin: -4px 0 0 -4px;
+      border: 1.5px solid #fff;
       border-radius: 50%;
-      background: var(--gold);
+      background: #111;
+      box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.35);
       pointer-events: none;
-      box-shadow: 0 0 0 0 rgba(228, 177, 90, 0.7);
-      animation: ping 1.8s ease-out infinite;
     }
-    @keyframes ping {
-      70% { box-shadow: 0 0 0 14px rgba(228, 177, 90, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(228, 177, 90, 0); }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--faint);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
-    label { display: block; margin-bottom: 4px; color: var(--muted); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
     input[type="number"] {
       width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.28);
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #000;
       color: var(--ink);
       font: inherit;
+      letter-spacing: -0.011em;
+      transition: border-color 0.15s ease;
     }
-    input:focus { outline: 2px solid rgba(143, 208, 198, 0.45); border-color: transparent; }
-    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+    input:focus { outline: none; border-color: #fff; }
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 12px; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     button {
-      font: inherit;
-      color: var(--ink);
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
       background: transparent;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 8px 14px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.011em;
       cursor: pointer;
-      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
-    button:hover { transform: translateY(-2px); border-color: var(--accent); background: rgba(143, 208, 198, 0.08); }
-    button.primary {
-      background: var(--ink);
-      color: #10202c;
-      border-color: transparent;
-      font-weight: 640;
+    button:hover { background: rgba(255, 255, 255, 0.06); }
+    button.primary { background: var(--ink); color: #0a0a0a; border-color: var(--ink); }
+    button.primary:hover { background: #fff; }
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
     }
-    button.primary:hover { background: var(--accent); }
-    .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
-    .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .fact {
-      padding: 12px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.03);
+    .fact span {
+      display: block;
+      color: var(--faint);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
-    .fact span { display: block; color: var(--muted); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
-    .fact strong { display: block; margin-top: 4px; font-family: Fraunces, Georgia, serif; font-size: 1.35rem; font-weight: 520; }
-    .fact strong.flip { animation: flip 0.45s ease; }
-    @keyframes flip {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: none; }
+    .fact strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
     }
-    .match { color: var(--accent); }
-    .miss { color: var(--coral); }
-    .note { min-height: 1.5em; margin: 12px 0 0; color: var(--muted); }
-    article { margin-top: 64px; }
+    .fact strong.swap { animation: enter 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+    .miss { color: var(--miss); }
+    .note { min-height: 1.4em; margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+    article { max-width: 680px; margin-top: 72px; }
     article h2 {
-      margin: 0 0 14px;
-      font-family: Fraunces, Georgia, serif;
-      font-weight: 520;
-      font-size: clamp(2rem, 4vw, 3rem);
-      letter-spacing: -0.03em;
-      line-height: 1.05;
+      margin: 0 0 16px;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      line-height: 1.2;
     }
     article h3 {
-      margin: 36px 0 8px;
-      font-family: Fraunces, Georgia, serif;
-      font-weight: 520;
-      font-size: 1.6rem;
+      margin: 40px 0 8px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
     }
-    article p { max-width: 68ch; color: #d9d1c3; }
+    article p { margin: 0 0 14px; color: #d4d4d4; }
     pre {
-      max-width: 68ch;
-      padding: 16px 18px;
+      margin: 0 0 16px;
+      padding: 14px 16px;
       overflow: auto;
-      border-radius: 14px;
       border: 1px solid var(--line);
-      background: rgba(0, 0, 0, 0.35);
-      color: var(--accent);
-      font: 0.92rem/1.5 ui-monospace, "Cascadia Code", Consolas, monospace;
+      border-radius: 8px;
+      background: #0a0a0a;
+      color: #d4d4d4;
+      font-family: "Geist Mono", ui-monospace, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      letter-spacing: 0;
     }
     .stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      max-width: 720px;
-      margin: 22px 0;
+      margin: 8px 0 18px;
     }
     .stat {
-      padding: 16px;
-      border-radius: 16px;
+      padding: 14px;
       border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(143, 208, 198, 0.08), transparent 70%);
+      border-radius: 8px;
+      background: #0a0a0a;
     }
     .stat b {
       display: block;
-      font-family: Fraunces, Georgia, serif;
-      font-size: 2rem;
-      font-weight: 520;
-      color: var(--gold);
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
     }
-    .stat span { color: var(--muted); font-size: 0.88rem; }
-    .reveal { opacity: 0; transform: translateY(18px); }
-    .reveal.in { animation: rise 0.8s ease forwards; }
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: none; }
+    .stat span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    footer {
+      margin-top: 48px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
     }
-    footer { margin-top: 28px; color: var(--muted); }
+    footer a { margin-right: 16px; }
     @media (max-width: 800px) {
+      h1 { font-size: 32px; }
       .stage, .facts, .stats { grid-template-columns: 1fr; }
       #tile { width: 100%; height: auto; aspect-ratio: 1; }
-      .top { align-items: flex-start; flex-direction: column; }
+      header {
+        height: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 16px 24px;
+      }
+      nav { flex-wrap: wrap; }
     }
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation: none !important;
-        transition: none !important;
-      }
-      .reveal { opacity: 1; transform: none; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      html { scroll-behavior: auto; }
     }
   </style>
 </head>
 <body>
   <main>
-    <header class="top">
-      <div class="mark">Shoreline</div>
-      <nav class="nav">
+    <header class="enter">
+      <a class="brand" href="#top">Shoreline</a>
+      <nav>
         <a href="#writeup">Write-up</a>
         <a href="https://huggingface.co/vanishingradient/shoreline-land-water">Model</a>
         <a href="https://github.com/saqlain2204/shoreline">Code</a>
       </nav>
     </header>
-    <h1>Land or water.</h1>
-    <p class="lead">
+    <h1 id="top" class="enter d1">Land or water.</h1>
+    <p class="lead enter d2">
       Type a latitude and longitude, or click the map. The tile is drawn from public-domain coastlines.
       The word beside it is the adapter’s answer for the one-degree cell that contains this place.
     </p>
-    <svg class="wave" viewBox="0 0 280 28" aria-hidden="true">
-      <path d="M0 16 C 24 16 24 6 48 6 S 72 22 96 22 120 8 144 8 168 20 192 20 216 4 240 6 264 16 280 16" />
-    </svg>
-    <section class="stage">
-      <div class="tile-frame" id="tileFrame">
+    <section class="stage enter d2">
+      <div class="frame">
         <canvas id="tile" width="128" height="128" aria-label="Atlas tile"></canvas>
       </div>
       <div>
-        <div class="map-frame">
+        <div class="frame">
           <canvas id="world" width="360" height="180" aria-label="World map"></canvas>
           <span class="pin" id="pin" hidden></span>
         </div>
@@ -307,54 +275,52 @@
             <input id="lon" type="number" min="-180" max="180" step="0.01" value="2.35" />
           </div>
         </div>
-        <button class="primary" id="ask" type="button">Ask</button>
-        <div class="presets" id="presets"></div>
+        <div class="row">
+          <button class="primary" id="ask" type="button">Ask</button>
+          <div class="row" id="presets"></div>
+        </div>
         <div class="facts">
-          <div class="fact"><span>Model</span><strong id="model">…</strong></div>
-          <div class="fact"><span>Atlas</span><strong id="atlas">…</strong></div>
-          <div class="fact"><span>Score</span><strong id="score">…</strong></div>
+          <div class="fact"><span>Model</span><strong id="model">—</strong></div>
+          <div class="fact"><span>Atlas</span><strong id="atlas">—</strong></div>
+          <div class="fact"><span>Score</span><strong id="score">—</strong></div>
         </div>
         <p class="note" id="note">Drawing the atlas…</p>
       </div>
     </section>
 
     <article id="writeup">
-      <h2 class="reveal">Teaching a small model the shape of the coast</h2>
-      <p class="reveal">Shoreline asks a plain question. Give a model a latitude and a longitude, and ask whether that place is land or water. The answer is one word. The score is whether that word matches an atlas.</p>
-      <p class="reveal">The atlas is a grid made from Natural Earth 1:110m coastlines and lakes, which are in the public domain. Each cell is a quarter of a degree. A harbor on that simplified coast can fall in the neighboring cell, so the label is the atlas, not a navigational chart. Lakes such as the Caspian Sea and the Great Lakes are water.</p>
-
-      <h3 class="reveal">The episode</h3>
-      <p class="reveal">A survey episode is one step.</p>
-      <pre class="reveal">Land or Water?
+      <h2>Teaching a small model the shape of the coast</h2>
+      <p>Shoreline asks a plain question. Give a model a latitude and a longitude, and ask whether that place is land or water. The answer is one word. The score is whether that word matches an atlas.</p>
+      <p>The atlas is a grid made from Natural Earth 1:110m coastlines and lakes, which are in the public domain. Each cell is a quarter of a degree. A harbor on that simplified coast can fall in the neighboring cell, so the label is the atlas, not a navigational chart. Lakes such as the Caspian Sea and the Great Lakes are water.</p>
+      <h3>The episode</h3>
+      <p>A survey episode is one step.</p>
+      <pre>Land or Water?
 Latitude: 48.86
 Longitude: 2.35
 Reply with one word: land or water.</pre>
-      <p class="reveal">The label is not in the prompt. Reward is 1 when the last land or water in the reply matches the cell, and 0 otherwise. Training draws land and water equally. On a uniform sample of the globe, water is the larger share, so a model that always says water looks better than it is.</p>
-      <p class="reveal">Two other episodes sit on the same atlas. Coast starts inland and asks the model to walk north, south, east, or west until it says here on the shoreline. Locate hides the coordinate, shows a coarse sketch of the view, and scores a guessed latitude and longitude by distance.</p>
-
-      <h3 class="reveal">Training</h3>
-      <p class="reveal">The published adapter is a LoRA on Qwen/Qwen2.5-0.5B-Instruct, rank 8, on a single T4. Each step shows eight coordinates, half land and half water in expectation, and the target reply is the one word that would score 1. Four hundred steps cover 3,200 places. The weights are the adapter at <a href="https://huggingface.co/vanishingradient/shoreline-land-water">vanishingradient/shoreline-land-water</a>.</p>
-      <div class="stats reveal">
-        <div class="stat"><b data-count="47">0</b><span>percent before training, on 200 balanced places. Land was almost never named.</span></div>
-        <div class="stat"><b data-count="75.5">0</b><span>percent after training. 61 percent of land cells, 92 percent of water cells.</span></div>
-        <div class="stat"><b data-count="81.5">0</b><span>percent on 200 places drawn uniformly across the globe.</span></div>
+      <p>The label is not in the prompt. Reward is 1 when the last land or water in the reply matches the cell, and 0 otherwise. Training draws land and water equally. On a uniform sample of the globe, water is the larger share, so a model that always says water looks better than it is.</p>
+      <p>Two other episodes sit on the same atlas. Coast starts inland and asks the model to walk north, south, east, or west until it says here on the shoreline. Locate hides the coordinate, shows a coarse sketch of the view, and scores a guessed latitude and longitude by distance.</p>
+      <h3>Training</h3>
+      <p>The published adapter is a LoRA on Qwen/Qwen2.5-0.5B-Instruct, rank 8, on a single T4. Each step shows eight coordinates, half land and half water in expectation, and the target reply is the one word that would score 1. Four hundred steps cover 3,200 places. The weights are the adapter at <a href="https://huggingface.co/vanishingradient/shoreline-land-water">vanishingradient/shoreline-land-water</a>.</p>
+      <div class="stats">
+        <div class="stat"><b>47%</b><span>Before training, on 200 balanced places. Land was almost never named.</span></div>
+        <div class="stat"><b>75.5%</b><span>After training. 61% of land cells, 92% of water cells.</span></div>
+        <div class="stat"><b>81.5%</b><span>On 200 places drawn uniformly across the globe.</span></div>
       </div>
-      <p class="reveal">That is a coarse map, not a coastline survey. The model has a better chance on open ocean and on broad interiors than on a cell that sits on the 1:110m shore.</p>
-
-      <h3 class="reveal">On this page</h3>
-      <p class="reveal">The map above takes a latitude and a longitude, or a click. It draws the atlas tile and shows the word the adapter gave for the one-degree cell that contains that place, next to the atlas label.</p>
-      <p class="reveal">The code is at <a href="https://github.com/saqlain2204/shoreline">github.com/saqlain2204/shoreline</a>. A local check of one place:</p>
-      <pre class="reveal">python -m shoreline.demo --lat 48.86 --lon 2.35 --answer land</pre>
+      <p>That is a coarse map, not a coastline survey. The model has a better chance on open ocean and on broad interiors than on a cell that sits on the 1:110m shore.</p>
+      <h3>On this page</h3>
+      <p>The map above takes a latitude and a longitude, or a click. It draws the atlas tile and shows the word the adapter gave for the one-degree cell that contains that place, next to the atlas label.</p>
+      <p>The code is at <a href="https://github.com/saqlain2204/shoreline">github.com/saqlain2204/shoreline</a>.</p>
+      <pre>python -m shoreline.demo --lat 48.86 --lon 2.35 --answer land</pre>
     </article>
-    <footer class="reveal">
+    <footer>
       <a href="https://huggingface.co/vanishingradient/shoreline-land-water">Model</a>
-      ·
       <a href="https://github.com/saqlain2204/shoreline">Code</a>
     </footer>
   </main>
   <script>
     const H = 720, W = 1440;
-    const WATER = [18, 50, 76], LAND = [196, 176, 132], SHORE = [244, 236, 214], INK = [143, 224, 208];
+    const WATER = [12, 42, 64], LAND = [196, 180, 140], SHORE = [236, 228, 208], INK = [255, 255, 255];
     const PLACES = [
       ["Paris", 48.86, 2.35],
       ["Sahara", 23.5, 12.5],
@@ -363,7 +329,6 @@ Reply with one word: land or water.</pre>
     ];
     const tile = document.getElementById("tile");
     const world = document.getElementById("world");
-    const tileFrame = document.getElementById("tileFrame");
     const pin = document.getElementById("pin");
     const latInput = document.getElementById("lat");
     const lonInput = document.getElementById("lon");
@@ -443,10 +408,9 @@ Reply with one word: land or water.</pre>
       for (let d = center + gap + 1; d < center + arm + 1; d++) paint(center, d);
       for (let d = center - arm; d < center - gap; d++) paint(d, center);
       for (let d = center + gap + 1; d < center + arm + 1; d++) paint(d, center);
+      tile.classList.add("dim");
       ctx.putImageData(image, 0, 0);
-      tileFrame.classList.remove("pulse");
-      void tileFrame.offsetWidth;
-      tileFrame.classList.add("pulse");
+      requestAnimationFrame(() => tile.classList.remove("dim"));
     }
 
     function drawWorld() {
@@ -468,18 +432,19 @@ Reply with one word: land or water.</pre>
       ctx.putImageData(image, 0, 0);
     }
 
-    function setFact(id, text, kind) {
+    function setFact(id, text, miss) {
       const node = document.getElementById(id);
       node.textContent = text;
-      node.className = kind ? "flip " + kind : "flip";
+      node.classList.toggle("miss", Boolean(miss));
+      node.classList.remove("swap");
+      void node.offsetWidth;
+      node.classList.add("swap");
     }
 
     function placePin(lat, lon) {
-      const x = ((wrapLon(lon) + 180) / 360) * 100;
-      const y = ((90 - Math.min(90, Math.max(-90, lat))) / 180) * 100;
       pin.hidden = false;
-      pin.style.left = x + "%";
-      pin.style.top = y + "%";
+      pin.style.left = ((wrapLon(lon) + 180) / 360) * 100 + "%";
+      pin.style.top = ((90 - Math.min(90, Math.max(-90, lat))) / 180) * 100 + "%";
     }
 
     function ask() {
@@ -491,11 +456,11 @@ Reply with one word: land or water.</pre>
       const matched = guess.word === atlas;
       setFact("model", guess.word);
       setFact("atlas", atlas);
-      setFact("score", matched ? "Match" : "Miss", matched ? "match" : "miss");
+      setFact("score", matched ? "Match" : "Miss", !matched);
       const same = Math.abs(lat - guess.lat) < 0.05 && Math.abs(wrapLon(lon - guess.lon)) < 0.05;
       document.getElementById("note").textContent = same
         ? "Asked at this coordinate."
-        : `Asked at the cell center ${guess.lat.toFixed(2)}, ${guess.lon.toFixed(2)}.`;
+        : "Asked at the cell center " + guess.lat.toFixed(2) + ", " + guess.lon.toFixed(2) + ".";
       placePin(lat, lon);
       drawTile(lat, lon);
     }
@@ -523,33 +488,6 @@ Reply with one word: land or water.</pre>
         ask();
       });
       presets.appendChild(button);
-    }
-
-    const motion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const seen = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        entry.target.classList.add("in");
-        for (const figure of entry.target.querySelectorAll("[data-count]")) countUp(figure);
-        seen.unobserve(entry.target);
-      }
-    }, { threshold: 0.35 });
-    for (const node of document.querySelectorAll(".reveal")) seen.observe(node);
-
-    function countUp(node) {
-      const target = Number(node.dataset.count);
-      if (!motion) {
-        node.textContent = String(target);
-        return;
-      }
-      const start = performance.now();
-      const tick = (now) => {
-        const t = Math.min(1, (now - start) / 900);
-        const value = target * (1 - Math.pow(1 - t, 3));
-        node.textContent = (target % 1 ? value.toFixed(1) : Math.round(value).toString());
-        if (t < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
     }
 
     Promise.all([
