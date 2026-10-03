@@ -6,6 +6,8 @@ A 2° grid is 90 × 180 = **16,200** places. Shoreline is that grid, an atlas ti
 
 ![Land and water at 2 degrees](docs/earth.png)
 
+![An episode playing on its own: the agent walks to the shore, then answers land or water](docs/episode.gif)
+
 ## What you can train
 
 **Survey.** One step. The observation is the question and a map tile centered on the coordinate. The reply is free text. Reward is 1 when the last `land` or `water` in the reply matches the cell, and 0 otherwise. The label is not in the prompt.
