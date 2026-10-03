@@ -14,13 +14,13 @@ A 2° grid is 90 × 180 = **16,200** places. Shoreline is that grid, an atlas ti
 
 **Locate.** The agent is dropped on a hidden place. It sees an atlas sketch and a map tile. The latitude and longitude are not in the prompt. It can look `north`, `south`, `east`, or `west`, then commit with two numbers. The reward falls with kilometres of error, and each look costs a little.
 
-Training samples land and water evenly, because a model that always says "water" is right on about two thirds of a uniform lat/lon grid. The 16,200-cell plot is the real report card, and it keeps the planet's actual mix.
+Training samples land and water evenly, because a model that always says "water" is right on about two thirds of a uniform lat/lon grid.
 
 ## Map tiles
 
 The tiles are drawn from [Natural Earth](https://www.naturalearthdata.com/) 1:110m land and lake outlines, which are in the public domain. Lakes such as the Caspian and the Great Lakes are water. The raster is 0.25°. A harbor on that simplified coastline can fall in the neighboring cell.
 
-Google Maps imagery is not redistributable, so Shoreline does not call Google. The picture the agent sees is an atlas tile rendered in this repo: water, land, a pale shoreline, and a crosshair on the coordinate.
+The picture is an atlas tile rendered in this repo: water, land, a pale shoreline, and a crosshair on the coordinate.
 
 ## Install
 
@@ -55,16 +55,14 @@ print(scored.reward)
 
 ## Plot the 16,200 cells
 
-The ground-truth globe, the same grid Karpathy used:
-
 ```bash
 python -m shoreline.plot --out docs/earth.png
 ```
 
-To ask a local OpenAI-compatible server (llama.cpp, the local Gemma chat, vLLM):
+To ask a local OpenAI-compatible server:
 
 ```bash
-python -m shoreline.plot --base-url http://127.0.0.1:8791/v1 --step 10 --out outputs/model.png
+python -m shoreline.plot --base-url http://127.0.0.1:8080/v1 --step 10 --out outputs/model.png
 ```
 
 `--step 2` is the full 16,200 questions. The command stops above 400 questions unless you pass `--yes`, because a local model can take a long time to answer the whole planet. The picture has three panels: the true globe, the model's globe, and the misses in red.
@@ -73,7 +71,7 @@ python -m shoreline.plot --base-url http://127.0.0.1:8791/v1 --step 10 --out out
 
 The default job is a 0.5B model with a small LoRA and four short answers per step. A free T4, on Colab or on Kaggle, has enough memory.
 
-**Colab.** Runtime → Change runtime type → T4 GPU. Upload this folder, or keep it in Google Drive, and run `notebooks/colab_grpo.ipynb`. The adapter is saved to `/content/shoreline-adapter`, with a checkpoint every 5 steps. If `HF_TOKEN` is set, those checkpoints are also pushed to a private Hub repo.
+**Colab.** Runtime → Change runtime type → T4 GPU. Upload this folder, or keep it in Google Drive, and run `notebooks/colab_grpo.ipynb`. The adapter is saved to `/content/shoreline-adapter`, with a checkpoint every 5 steps.
 
 **Kaggle.** Upload this folder as a dataset, turn on a GPU accelerator, and run `notebooks/kaggle_grpo.ipynb`.
 
@@ -114,7 +112,7 @@ docker build -t shoreline .
 docker run --rm -p 8000:8000 shoreline
 ```
 
-The simulator itself does not import OpenEnv, so the Kaggle job can train without the server.
+The simulator does not import OpenEnv.
 
 ## Project layout
 
