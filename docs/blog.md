@@ -29,7 +29,7 @@ That is a coarse map, not a coastline survey. The model has a better chance on o
 
 ## Try it
 
-The [Shoreline space](https://huggingface.co/spaces/vanishingradient/shoreline) takes a latitude and a longitude, draws the atlas tile, and shows the model's word next to the atlas label.
+The [Shoreline space](https://huggingface.co/spaces/vanishingradient/shoreline) takes a latitude and a longitude, or a click on the map. It draws the atlas tile and shows the word the adapter gave for the one-degree cell that contains that place, next to the atlas label.
 
 The code is at [github.com/saqlain2204/shoreline](https://github.com/saqlain2204/shoreline). A local check of one place:
 

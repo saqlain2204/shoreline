@@ -3,14 +3,11 @@ title: Shoreline
 emoji: 🌊
 colorFrom: blue
 colorTo: yellow
-sdk: gradio
-sdk_version: 4.44.1
-app_file: app.py
-suggested_hardware: zero-a10g
+sdk: static
 pinned: false
 license: mit
 ---
 
 # Shoreline
 
-Ask a latitude and longitude. A small model answers land or water, and the page draws the atlas tile for that place.
+Click the map or type a latitude and longitude. The page draws the atlas tile and shows the adapter’s one-word answer next to the atlas label.

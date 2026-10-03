@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shoreline</title>
+  <style>
+    :root {
+      --ink: #1c201c;
+      --paper: #f3efe4;
+      --water: #1b547a;
+      --land: #c4b894;
+      --shore: #f4f1ea;
+      --line: #d7d0c2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: 16px/1.45 "Segoe UI", sans-serif;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+    }
+    h1 { font-size: 2rem; margin: 0 0 8px; letter-spacing: -0.03em; }
+    .lead { margin: 0 0 22px; max-width: 62ch; }
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      background: var(--water);
+      border: 1px solid var(--ink);
+      cursor: crosshair;
+      image-rendering: pixelated;
+    }
+    #tile { width: 280px; height: 280px; cursor: default; }
+    label { display: block; font-size: 0.82rem; margin-bottom: 4px; }
+    input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--ink);
+      background: white;
+      font: inherit;
+    }
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+    button {
+      font: inherit;
+      border: 1px solid var(--ink);
+      background: white;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    button.primary { background: var(--ink); color: var(--paper); }
+    button:hover { background: #efe8d6; }
+    button.primary:hover { background: #33382f; }
+    .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 16px; }
+    .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .fact {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      background: white;
+    }
+    .fact span { display: block; font-size: 0.78rem; color: #5c6158; }
+    .fact strong { font-size: 1.15rem; font-weight: 650; }
+    .note { margin: 14px 0 0; }
+    footer { margin-top: 28px; font-size: 0.92rem; }
+    a { color: var(--water); }
+    @media (max-width: 760px) {
+      .layout, .facts { grid-template-columns: 1fr; }
+      #tile { width: 100%; height: auto; aspect-ratio: 1; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Shoreline</h1>
+    <p class="lead">
+      Type a latitude and longitude, or click the map. The tile is drawn from public-domain coastlines.
+      The word beside it is the adapter’s answer for the one-degree cell that contains this place.
+    </p>
+    <div class="layout">
+      <canvas id="tile" width="128" height="128" aria-label="Atlas tile"></canvas>
+      <div>
+        <canvas id="world" width="360" height="180" aria-label="World map"></canvas>
+        <div class="fields">
+          <div>
+            <label for="lat">Latitude</label>
+            <input id="lat" type="number" min="-90" max="90" step="0.01" value="48.86" />
+          </div>
+          <div>
+            <label for="lon">Longitude</label>
+            <input id="lon" type="number" min="-180" max="180" step="0.01" value="2.35" />
+          </div>
+        </div>
+        <button class="primary" id="ask" type="button">Ask</button>
+        <div class="presets" id="presets"></div>
+        <div class="facts">
+          <div class="fact"><span>Model</span><strong id="model">…</strong></div>
+          <div class="fact"><span>Atlas</span><strong id="atlas">…</strong></div>
+          <div class="fact"><span>Score</span><strong id="score">…</strong></div>
+        </div>
+        <p class="note" id="note"></p>
+      </div>
+    </div>
+    <footer>
+      <p>
+        On 200 fresh balanced places the adapter scores 75.5 percent.
+        Before training, the same prompt scored 47 percent and almost never said land.
+        Coasts on this 1:110m atlas are coarse, so a harbor can fall in the neighboring cell.
+      </p>
+      <p>
+        <a href="https://huggingface.co/vanishingradient/shoreline-land-water">Model</a>
+        ·
+        <a href="https://github.com/saqlain2204/shoreline">Code</a>
+        ·
+        <a href="https://github.com/saqlain2204/shoreline/blob/master/docs/blog.md">Write-up</a>
+      </p>
+    </footer>
+  </main>
+  <script>
+    const H = 720, W = 1440;
+    const WATER = [27, 84, 122], LAND = [196, 184, 148], SHORE = [244, 241, 234], INK = [28, 32, 28];
+    const PLACES = [
+      ["Paris", 48.86, 2.35],
+      ["Sahara", 23.5, 12.5],
+      ["Pacific", 0, -160],
+      ["Caspian", 41.5, 50.5],
+    ];
+    const tile = document.getElementById("tile");
+    const world = document.getElementById("world");
+    const latInput = document.getElementById("lat");
+    const lonInput = document.getElementById("lon");
+    let mask, answers, step, nlat, nlon;
+
+    function wrapLon(lon) {
+      return ((lon + 180) % 360 + 360) % 360 - 180;
+    }
+
+    function maskAt(lat, lon) {
+      lat = Math.min(90, Math.max(-90, lat));
+      lon = wrapLon(lon);
+      let row = lat >= 90 ? 0 : Math.floor((90 - lat) / 180 * H);
+      row = Math.min(H - 1, Math.max(0, row));
+      const col = Math.floor((lon + 180) / 360 * W) % W;
+      return mask[row * W + col] ? 1 : 0;
+    }
+
+    function modelAt(lat, lon) {
+      lat = Math.min(90, Math.max(-90, lat));
+      lon = wrapLon(lon);
+      let row = lat >= 90 ? 0 : Math.floor((90 - lat) / 180 * nlat);
+      row = Math.min(nlat - 1, Math.max(0, row));
+      const col = Math.floor((lon + 180) / 360 * nlon) % nlon;
+      return {
+        word: answers[row * nlon + col] ? "land" : "water",
+        lat: 90 - (row + 0.5) * (180 / nlat),
+        lon: -180 + (col + 0.5) * (360 / nlon),
+      };
+    }
+
+    function drawTile(lat, lon) {
+      const size = 128, span = 20, half = span / 2;
+      const ctx = tile.getContext("2d");
+      const image = ctx.createImageData(size, size);
+      const land = new Uint8Array(size * size);
+      for (let y = 0; y < size; y++) {
+        const latitude = lat + half - (span * y) / (size - 1);
+        for (let x = 0; x < size; x++) {
+          const longitude = lon - half + (span * x) / (size - 1);
+          const bit = maskAt(latitude, longitude);
+          land[y * size + x] = bit;
+          const color = bit ? LAND : WATER;
+          const i = (y * size + x) * 4;
+          image.data[i] = color[0];
+          image.data[i + 1] = color[1];
+          image.data[i + 2] = color[2];
+          image.data[i + 3] = 255;
+        }
+      }
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          if (!land[y * size + x]) continue;
+          const shore =
+            (y > 0 && !land[(y - 1) * size + x]) ||
+            (y + 1 < size && !land[(y + 1) * size + x]) ||
+            (x > 0 && !land[y * size + x - 1]) ||
+            (x + 1 < size && !land[y * size + x + 1]);
+          if (!shore) continue;
+          const i = (y * size + x) * 4;
+          image.data[i] = SHORE[0];
+          image.data[i + 1] = SHORE[1];
+          image.data[i + 2] = SHORE[2];
+        }
+      }
+      const center = Math.floor(size / 2);
+      const arm = Math.max(4, Math.floor(size / 16));
+      const gap = 2;
+      const paint = (x, y) => {
+        if (x < 0 || y < 0 || x >= size || y >= size) return;
+        const i = (y * size + x) * 4;
+        image.data[i] = INK[0];
+        image.data[i + 1] = INK[1];
+        image.data[i + 2] = INK[2];
+      };
+      for (let d = center - arm; d < center - gap; d++) paint(center, d);
+      for (let d = center + gap + 1; d < center + arm + 1; d++) paint(center, d);
+      for (let d = center - arm; d < center - gap; d++) paint(d, center);
+      for (let d = center + gap + 1; d < center + arm + 1; d++) paint(d, center);
+      ctx.putImageData(image, 0, 0);
+    }
+
+    function drawWorld() {
+      const ctx = world.getContext("2d");
+      const w = world.width, h = world.height;
+      const image = ctx.createImageData(w, h);
+      for (let y = 0; y < h; y++) {
+        const lat = 90 - (y + 0.5) * (180 / h);
+        for (let x = 0; x < w; x++) {
+          const lon = -180 + (x + 0.5) * (360 / w);
+          const color = maskAt(lat, lon) ? LAND : WATER;
+          const i = (y * w + x) * 4;
+          image.data[i] = color[0];
+          image.data[i + 1] = color[1];
+          image.data[i + 2] = color[2];
+          image.data[i + 3] = 255;
+        }
+      }
+      ctx.putImageData(image, 0, 0);
+    }
+
+    function ask() {
+      const lat = Number(latInput.value);
+      const lon = Number(lonInput.value);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+      const atlas = maskAt(lat, lon) ? "land" : "water";
+      const guess = modelAt(lat, lon);
+      document.getElementById("model").textContent = guess.word;
+      document.getElementById("atlas").textContent = atlas;
+      document.getElementById("score").textContent = guess.word === atlas ? "Matches the atlas." : "Does not match the atlas.";
+      const same = Math.abs(lat - guess.lat) < 0.05 && Math.abs(wrapLon(lon - guess.lon)) < 0.05;
+      document.getElementById("note").textContent = same
+        ? "Asked at this coordinate."
+        : `Asked at the cell center ${guess.lat.toFixed(2)}, ${guess.lon.toFixed(2)}.`;
+      drawTile(lat, lon);
+    }
+
+    world.addEventListener("click", (event) => {
+      const rect = world.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      lonInput.value = (-180 + x * 360).toFixed(2);
+      latInput.value = (90 - y * 180).toFixed(2);
+      ask();
+    });
+    document.getElementById("ask").addEventListener("click", ask);
+    latInput.addEventListener("change", ask);
+    lonInput.addEventListener("change", ask);
+
+    const presets = document.getElementById("presets");
+    for (const [name, lat, lon] of PLACES) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = name;
+      button.addEventListener("click", () => {
+        latInput.value = lat;
+        lonInput.value = lon;
+        ask();
+      });
+      presets.appendChild(button);
+    }
+
+    Promise.all([
+      fetch("mask.bin").then((response) => response.arrayBuffer()),
+      fetch("answers.bin").then((response) => response.arrayBuffer()),
+      fetch("answers.json").then((response) => response.json()),
+    ]).then(([maskBuf, answerBuf, meta]) => {
+      mask = new Uint8Array(maskBuf);
+      answers = new Uint8Array(answerBuf);
+      step = meta.step;
+      nlat = meta.nlat;
+      nlon = meta.nlon;
+      drawWorld();
+      ask();
+    });
+  </script>
+</body>
+</html>

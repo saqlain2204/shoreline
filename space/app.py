@@ -5,7 +5,6 @@ from __future__ import annotations
 import tempfile
 
 import gradio as gr
-import spaces
 import torch
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -33,7 +32,6 @@ model.eval()
 sim = ShoreSim()
 
 
-@spaces.GPU(duration=60)
 def reply(prompt: str) -> str:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
